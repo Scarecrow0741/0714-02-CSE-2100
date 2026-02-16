@@ -1,0 +1,23 @@
+# Build artifacts
+build/
+*.o
+*.exe
+*.dll
+*.a
+
+# IDE
+.vscode/
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary
+*.tmp
+*.log
+*~
+*.swp
