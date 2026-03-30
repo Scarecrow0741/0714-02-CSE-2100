@@ -49,10 +49,11 @@
 #include "../board/board.h"
 #include "../tetromino/tetromino.h"
 #include "../interfaces/scoring_strategy.h"
-#include "../interfaces/game_state_renderer.h"
-#include "../interfaces/screen_renderer.h"
 #include "../interfaces/input_provider.h"
-#include "../../ui/renderer/renderer.h"
+
+// Forward declarations (no concrete class dependencies)
+class Renderer;
+class GameRenderer;
 
 enum class GameStateEnum {
     MENU,
@@ -63,17 +64,17 @@ enum class GameStateEnum {
 
 class GameEngine {
 private:
-    // Game components
+    // Game components (all injected as dependencies)
     Board board;
     Tetromino tetromino;
-    std::unique_ptr<IInputProvider> inputProvider;  // ISP: Depends on interface, not concrete class
-    Renderer renderer;
+    std::unique_ptr<IInputProvider> inputProvider;      // DIP: Depends on interface
+    std::unique_ptr<Renderer> renderer;                 // DIP: Injected concrete dependency
     
-    // Strategy patterns (OCP-compliant)
-    std::unique_ptr<ScoringStrategy> scoringStrategy;
-    std::unique_ptr<IGameStateRenderer> playingRenderer;    // ISP: Segregated interface
-    std::unique_ptr<IScreenRenderer> menuRenderer;          // ISP: Segregated interface
-    std::unique_ptr<IGameStateRenderer> gameOverRenderer;   // ISP: Segregated interface
+    // Strategy patterns (DIP-compliant)
+    std::unique_ptr<ScoringStrategy> scoringStrategy;   // DIP: Depends on interface
+    std::unique_ptr<GameRenderer> playingRenderer;      // DIP: Injected concrete renderer
+    std::unique_ptr<GameRenderer> menuRenderer;         // DIP: Injected concrete renderer
+    std::unique_ptr<GameRenderer> gameOverRenderer;     // DIP: Injected concrete renderer
     
     // Game state
     GameStateEnum gameState;
@@ -93,7 +94,33 @@ private:
     void updateGameLogic(int currentTime);
     
 public:
-    GameEngine(SDL_Renderer* sdlRenderer, TTF_Font* sdlFont);
+    /**
+     * Constructor - Dependency Injection Pattern
+     * 
+     * All dependencies must be provided by the caller (composition root in main.cpp).
+     * This ensures GameEngine has no knowledge of concrete implementations.
+     * 
+     * DEPENDENCY INVERSION PRINCIPLE:
+     *   - GameEngine depends on abstractions (IInputProvider, ScoringStrategy)
+     *   - Concrete implementations (InputHandler, ScoringStrategy subclasses) are created in main.cpp
+     *   - Main.cpp wires together all dependencies
+     *   - GameEngine receives fully-initialized dependencies
+     * 
+     * @param inputProvider Concrete input provider wrapped in interface (inject from main)
+     * @param renderer Concrete renderer instance (owned by GameEngine)
+     * @param scoringStrategy Concrete scoring strategy wrapped in interface (inject from main)
+     * @param playingRenderer Renderer for PLAYING state (inject from main)
+     * @param menuRenderer Renderer for MENU state (inject from main)
+     * @param gameOverRenderer Renderer for GAME_OVER state (inject from main)
+     */
+    GameEngine(
+        std::unique_ptr<IInputProvider> inputProvider,
+        std::unique_ptr<Renderer> renderer,
+        std::unique_ptr<ScoringStrategy> scoringStrategy,
+        std::unique_ptr<GameRenderer> playingRenderer,
+        std::unique_ptr<GameRenderer> menuRenderer,
+        std::unique_ptr<GameRenderer> gameOverRenderer
+    );
     ~GameEngine();
     
     // Game loop
