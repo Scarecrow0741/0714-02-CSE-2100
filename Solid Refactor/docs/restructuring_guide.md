@@ -166,25 +166,28 @@ Create a professional Makefile with targets for building and running the project
 ```
 src/
 ├── core/
-│   ├── board.h                  (NEW - Board class)
-│   ├── board.cpp
-│   ├── tetromino.h              (NEW - Tetromino class)
-│   ├── tetromino.cpp
-│   ├── game_engine.h            (NEW - GameEngine coordinator)
-│   ├── game_engine.cpp
-│   └── game_logic.cpp           (LEGACY - kept for reference)
+│   ├── board/                   (NEW SUBFOLDER)
+│   │   ├── board.h
+│   │   └── board.cpp
+│   ├── tetromino/               (NEW SUBFOLDER)
+│   │   ├── tetromino.h
+│   │   └── tetromino.cpp
+│   └── game_engine/             (NEW SUBFOLDER)
+│       ├── game_engine.h
+│       └── game_engine.cpp
 ├── input/                       (NEW FOLDER)
-│   ├── input_handler.h          (NEW - InputHandler class)
+│   ├── input_handler.h
 │   └── input_handler.cpp
 ├── ui/
-│   ├── renderer.h               (NEW - Refactored Renderer class)
-│   ├── renderer_new.cpp         (NEW - OOP implementation)
-│   ├── renderer.cpp             (LEGACY - C-style, deprecated)
-│   └── menu.cpp                 (LEGACY - still used for menus)
+│   ├── renderer.h               (Refactored Renderer class)
+│   ├── renderer.cpp             (OOP implementation)
+│   └── menu.cpp                 (Legacy menu rendering)
 ├── main/
-│   └── main.cpp                 (REFACTORED - uses GameEngine)
+│   └── main.cpp                 (Refactored to use GameEngine)
 └── include/
-    └── tetris.h                 (UPDATED - now documents OOP architecture)
+    ├── tetris.h                 (Updated for OOP architecture)
+    └── SDL2/
+        └── (SDL2 headers)
 ```
 
 ### Class Architecture
@@ -292,7 +295,7 @@ bool isMouseButtonPressed() const;
 
 ---
 
-#### 4. **Renderer Class** (`src/ui/renderer.h` / `renderer_new.cpp`)
+#### 4. **Renderer Class** (`src/ui/renderer.h` / `renderer.cpp`)
 **Single Responsibility**: Render game state to screen
 
 **Responsibilities:**
@@ -459,25 +462,127 @@ Coordination           → GameEngine (ties everything together)
 
 ---
 
+### Build System & Code Organization Prompt
+
+```
+"Organize the OOP code into logical subfolders within src/core/ for better maintainability:
+- Move board.h and board.cpp into src/core/board/
+- Move tetromino.h and tetromino.cpp into src/core/tetromino/
+- Move game_engine.h and game_engine.cpp into src/core/game_engine/
+
+Create a professional Makefile with standard targets:
+- make: Compiles the project
+- make run: Compiles and runs the executable
+- make clean: Removes compiled files
+- make rebuild: Clean and compile again
+
+Remove temporary build scripts (build.bat, build.sh) as they are no longer needed.
+Update all include paths in the source files to reflect the new folder structure."
+```
+
+### Implementation Applied
+
+**New Subfolder Structure:**
+```
+src/
+├── core/
+│   ├── board/
+│   │   ├── board.h
+│   │   └── board.cpp
+│   ├── tetromino/
+│   │   ├── tetromino.h
+│   │   └── tetromino.cpp
+│   └── game_engine/
+│       ├── game_engine.h
+│       └── game_engine.cpp
+├── input/
+│   ├── input_handler.h
+│   └── input_handler.cpp
+├── ui/
+│   ├── renderer.h
+│   ├── renderer.cpp
+│   └── menu.cpp
+├── main/
+│   └── main.cpp
+└── include/
+    ├── tetris.h
+    └── SDL2/
+        └── (SDL headers)
+```
+
+**Makefile Created:**
+```makefile
+# Compiler and flags
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+LDFLAGS = -lSDL2 -lSDL2_ttf -lm
+INCLUDE = -I./src/include
+
+# Source files
+SOURCES = src/core/board/board.cpp \
+          src/core/tetromino/tetromino.cpp \
+          src/core/game_engine/game_engine.cpp \
+          src/input/input_handler.cpp \
+          src/ui/renderer.cpp \
+          src/ui/menu.cpp \
+          src/main/main.cpp
+
+# Object files
+OBJECTS = $(SOURCES:.cpp=.o)
+
+# Output executable
+TARGET = tetris_oop.exe
+
+# Build rules
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
+
+run: $(TARGET)
+	./$(TARGET)
+
+clean:
+	rm -f $(OBJECTS) $(TARGET)
+
+rebuild: clean all
+
+.PHONY: all run clean rebuild
+```
+
+**Updated Include Paths:**
+- `game_engine.h`: `#include "../board/board.h"`, `#include "../tetromino/tetromino.h"`
+- `renderer.cpp`: `#include "../core/board/board.h"`, `#include "../core/tetromino/tetromino.h"`
+- `main.cpp`: `#include "../core/game_engine/game_engine.h"`
+- `input_handler.cpp`: All includes use relative paths to subfolders
+
+**Files Deleted:**
+- `build.bat` (temporary build script)
+- `build.sh` (temporary build script)
+
+---
+
 ### Compilation & Building
 
 **Source Files to Compile:**
 ```
 src/core/
-  - board.cpp
-  - tetromino.cpp
-  - game_engine.cpp
-  - game_logic.cpp          (legacy, optional)
+  - board/board.cpp
+  - tetromino/tetromino.cpp
+  - game_engine/game_engine.cpp
 
 src/input/
   - input_handler.cpp
 
 src/ui/
-  - renderer_new.cpp        (new OOP renderer)
-  - menu.cpp                (legacy)
+  - renderer.cpp        (OOP renderer)
+  - menu.cpp            (Legacy menu rendering)
 
 src/main/
-  - main.cpp                (refactored)
+  - main.cpp            (Refactored entry point)
 ```
 
 **Include Paths:**
@@ -562,13 +667,18 @@ src/main/
 ### Post-Refactoring Cleanup & Organization
 
 **Files Removed:**
-- Deleted legacy `game_logic.cpp` and `renderer.cpp` (replaced by OOP classes)
-- Removed temporary build scripts
+- Deleted legacy `game_logic.cpp` (replaced by GameEngine, Tetromino, Board classes)
+- Consolidated `renderer_new.cpp` into `renderer.cpp` (single OOP renderer implementation)
+- Removed temporary build scripts (`build.bat`, `build.sh`)
 
 **Code Reorganization:**
-- Created logical subfolders: `src/core/board/`, `src/core/game_engine/`, `src/core/tetromino/`
-- Each class in dedicated folder with .h and .cpp files
-- Updated all include paths to reflect new structure
+- Created logical subfolders for core components:
+  - `src/core/board/` - Board class for grid management
+  - `src/core/tetromino/` - Tetromino class for piece management
+  - `src/core/game_engine/` - GameEngine coordinator for component orchestration
+- Each class now in dedicated folder with paired .h and .cpp files
+- Updated all include paths to reflect new subfolder structure
+- Kept legacy `menu.cpp` for menu rendering (can be refactored to OOP in future)
 
 **Build System:**
 - Created professional Makefile with targets: `make`, `make run`, `make clean`
