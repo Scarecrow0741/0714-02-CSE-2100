@@ -5,7 +5,25 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-// Game states
+/*
+ * ============================================================================
+ * TETRIS.H - Forward declarations and legacy support
+ * 
+ * This header provides:
+ * 1. Legacy C-style function declarations (for backward compatibility)
+ * 2. Enum definitions used across the codebase
+ * 3. Constants shared between old and new architecture
+ * 
+ * NEW ARCHITECTURE (C++ OOP):
+ * - Board class: src/core/board.h
+ * - Tetromino class: src/core/tetromino.h
+ * - GameEngine class: src/core/game_engine.h
+ * - InputHandler class: src/input/input_handler.h
+ * - Renderer class: src/ui/renderer.h
+ * ============================================================================
+ */
+
+// Game states (Legacy - kept for enum compatibility)
 typedef enum {
     GAME_STATE_MENU,
     GAME_STATE_PLAYING,
@@ -26,7 +44,7 @@ typedef enum {
 #define NEXT_PREVIEW_SIZE 4
 #define HUD_WIDTH 200
 
-// Game state structure
+// Legacy game state structure (kept for backward compatibility)
 typedef struct {
     int board[BOARD_HEIGHT][BOARD_WIDTH];
     int current_piece[4][4];
@@ -45,6 +63,9 @@ typedef struct {
     TTF_Font *font;
     int win_w, win_h;
 } GameState;
+
+// ===== LEGACY C-STYLE FUNCTIONS (Backward Compatibility) =====
+// These functions from game_logic.cpp are kept for reference/compatibility
 
 // Game logic functions
 void init_game(GameState *game);
