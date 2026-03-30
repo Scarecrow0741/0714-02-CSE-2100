@@ -25,18 +25,13 @@ void Board::clear() {
 }
 
 void Board::lockPieceToBoard(const int piece[4][4], int pieceX, int pieceY, int pieceType) {
-    // LSP COMPLIANCE: All piece types are stored using identical logic
-    // No shape gets special storage, validation, or handling
-    // typeID is just a data identifier (typeId + 1 to distinguish from empty cells)
-    // The Board does NOT make behavior decisions based on piece type
-    
     // Lock the piece to the board by storing its type value in board cells
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if (piece[y][x]) {
                 int boardX = pieceX + x;
                 int boardY = pieceY + y;
-                // Only place on board if within bounds (identical for all pieces)
+                // Only place on board if within bounds
                 if (boardY >= 0 && boardY < BOARD_HEIGHT && 
                     boardX >= 0 && boardX < BOARD_WIDTH) {
                     grid[boardY][boardX] = pieceType + 1;

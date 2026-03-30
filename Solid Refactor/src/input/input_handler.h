@@ -2,16 +2,8 @@
  * ============================================================================
  * FILE: input_handler.h
  * PURPOSE: InputHandler class - Translates SDL events to game commands
- *          NOW IMPLEMENTS IInputProvider (ISP Refactoring)
  * 
  * RESPONSIBILITY: Handle all input processing
- * 
- * INTERFACE SEGREGATION PRINCIPLE (ISP) Improvement:
- *   This class now explicitly implements IInputProvider
- *   - GameEngine depends on IInputProvider interface (not concrete InputHandler)
- *   - Decouples GameEngine from SDL implementation details
- *   - Allows testing with mock input providers
- *   - Allows alternative input sources (network, gamepad, AI, etc.)
  * 
  * SINGLE RESPONSIBILITY: This class is responsible ONLY for:
  *   - Polling SDL events
@@ -31,18 +23,20 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include "../core/interfaces/input_provider.h"
 
-/**
- * InputHandler class - Translates SDL events to game commands
- * 
- * ISP COMPLIANCE:
- *   - Implements IInputProvider interface
- *   - GameEngine depends on IInputProvider interface
- *   - Hides SDL implementation details from GameEngine
- *   - Allows swapping input implementations without GameEngine changes
- */
-class InputHandler : public IInputProvider {
+enum class GameCommand {
+    NONE,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    MOVE_DOWN,
+    ROTATE,
+    HARD_DROP,
+    QUIT,
+    MENU_PLAY,
+    MENU_EXIT
+};
+
+class InputHandler {
 private:
     SDL_Event event;
     bool shouldQuit;
@@ -51,38 +45,19 @@ public:
     InputHandler();
     ~InputHandler();
     
-    // IInputProvider Implementation
-    // =============================
+    // Poll and process events
+    void pollEvents();
     
-    /**
-     * Poll and process events (IInputProvider)
-     */
-    void pollEvents() override;
+    // Query command state
+    GameCommand getCommand();
     
-    /**
-     * Query command state (IInputProvider)
-     */
-    GameCommand getCommand() override;
+    // Query quit state
+    bool isQuitRequested() const { return shouldQuit; }
+    void quit() { shouldQuit = true; }
     
-    /**
-     * Query quit state (IInputProvider)
-     */
-    bool isQuitRequested() const override { return shouldQuit; }
-    
-    /**
-     * Request quit (IInputProvider)
-     */
-    void quit() override { shouldQuit = true; }
-    
-    /**
-     * Get mouse position (IInputProvider)
-     */
-    void getMousePosition(int& x, int& y) const override;
-    
-    /**
-     * Check mouse button (IInputProvider)
-     */
-    bool isMouseButtonPressed() const override;
+    // Mouse/menu interaction
+    void getMousePosition(int& x, int& y) const;
+    bool isMouseButtonPressed() const;
 };
 
 #endif // INPUT_HANDLER_H

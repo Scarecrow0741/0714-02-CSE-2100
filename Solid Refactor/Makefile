@@ -3,25 +3,21 @@
 
 CXX = g++
 CXXFLAGS = -std=c++17
-LDFLAGS = -L./lib -lSDL2 -lSDL2_ttf -lm
+LDFLAGS = -lSDL2 -lSDL2_ttf -lm
 INCLUDE = -I./src/include
 
 # Source files
 SOURCES = \
 	src/core/board/board.cpp \
 	src/core/tetromino/tetromino.cpp \
-	src/core/tetromino/shapes/tetromino_shapes.cpp \
 	src/core/game_engine/game_engine.cpp \
 	src/input/input_handler.cpp \
-	src/ui/renderer/renderer.cpp \
-	src/ui/menu/button.cpp \
-	src/ui/menu/menu_screen.cpp \
-	src/ui/menu/game_over_screen.cpp \
-	src/ui/menu/menu.cpp \
+	src/ui/renderer_new.cpp \
+	src/ui/menu.cpp \
 	src/main/main.cpp
 
 # Output
-TARGET = tetris.exe
+TARGET = tetris_oop.exe
 
 # Default target
 all: $(TARGET)
