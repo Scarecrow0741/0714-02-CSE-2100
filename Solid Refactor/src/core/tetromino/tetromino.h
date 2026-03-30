@@ -6,10 +6,27 @@
  * 
  * RESPONSIBILITY: Handle all piece-related data and transformations
  * 
+ * LISKOV SUBSTITUTION PRINCIPLE (LSP) Compliance:
+ *   This class maintains uniform contracts across all TetriminoShape subclasses:
+ *   
+ *   [✓] rotate(): Called on Tetromino, not on shape. Updates rotation state
+ *       uniformly regardless of shape type (even O-piece updates state)
+ *   
+ *   [✓] moveBy(dx, dy): Always succeeds, position always updates uniformly.
+ *       Collision detection is delegated to GameEngine (not shape-specific)
+ *   
+ *   [✓] getShapeMatrix(): Always returns valid 4x4 matrix, regardless of type
+ *   
+ *   [✓] Rotation Algorithm: All shapes use identical 90° clockwise rotation.
+ *       No shape requires special rotation logic.
+ *   
+ *   [✓] No Shape-Specific Preconditions: Every shape can be rotated, moved,
+ *       and rendered without type-checking
+ * 
  * SINGLE RESPONSIBILITY: This class is responsible ONLY for:
  *   - Managing current piece rotation state (now delegated to TetriminoShape)
  *   - Managing piece position (x, y coordinates)
- *   - Rotating pieces
+ *   - Rotating pieces (uniform algorithm for all shapes)
  *   - Providing piece data for collision detection and rendering
  *   - Holding references to TetriminoShape strategy objects
  * 
@@ -20,6 +37,7 @@
  *   - Know about the Board
  *   - Know about SDL/rendering
  *   - Manage game rules or scoring
+ *   - Check shape types to make behavior decisions (LSP requirement)
  * 
  * DESIGN IMPROVEMENT: Shape data is now managed by polymorphic TetriminoShape
  *   objects. To add a new shape, simply create a new TetriminoShape subclass
@@ -42,6 +60,7 @@ private:
     std::unique_ptr<TetriminoShape> nextShape;
     
     // Current rotation (0-3 for 90-degree rotations)
+    // POSTCONDITION: Rotation state ALWAYS updates, even for visually-symmetric shapes (LSP)
     int currentRotation;
     int nextRotation;
     
@@ -54,6 +73,7 @@ private:
     mutable int lastRotationState;  // Track if cache is valid
     
     // Helper function to rotate a 4x4 matrix 90 degrees clockwise
+    // INVARIANT: Applied uniformly to ALL shapes (LSP guarantee)
     void rotateCW(int piece[PIECE_SIZE][PIECE_SIZE]) const;
     void copyPiece(const int source[PIECE_SIZE][PIECE_SIZE], 
                    int dest[PIECE_SIZE][PIECE_SIZE]) const;
@@ -76,7 +96,10 @@ public:
     int getPosX() const { return posX; }
     int getPosY() const { return posY; }
     
-    // Rotation
+    // Rotation - MUST update state for all shapes (LSP contract)
+    // PRECONDITION: None (all shapes must support rotation without special conditions)
+    // POSTCONDITION: currentRotation increments, cache invalidated
+    // GUARANTEE: Called uniformly regardless of shape type (even O-pieces)
     void rotate();
     
     // Piece data access (maintains backward compatibility)

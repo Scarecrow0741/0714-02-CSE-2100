@@ -46,6 +46,10 @@ void GameEngine::startNewGame() {
 }
 
 bool GameEngine::checkCollision(int dx, int dy) {
+    // LSP COMPLIANCE: Collision detection is identical for all shapes
+    // No shape gets special collision handling or preconditions
+    // All shapes use the same bounding box check against board boundaries and placed blocks
+    
     // Save current position
     int originalX = tetromino.getPosX();
     int originalY = tetromino.getPosY();
@@ -62,14 +66,14 @@ bool GameEngine::checkCollision(int dx, int dy) {
                 int boardX = tetromino.getPosX() + x;
                 int boardY = tetromino.getPosY() + y;
                 
-                // Check boundary conditions
+                // Check boundary conditions (identical for all shapes)
                 if (boardX < 0 || boardX >= BOARD_WIDTH ||
                     boardY >= BOARD_HEIGHT) {
                     collision = true;
                     break;
                 }
                 
-                // Check collision with placed blocks (only if in valid board area)
+                // Check collision with placed blocks (identical for all shapes)
                 if (boardY >= 0 && board.isCellOccupied(boardX, boardY)) {
                     collision = true;
                     break;
@@ -136,6 +140,9 @@ void GameEngine::handleInput() {
             checkCollision(0, 1);
             break;
         case GameCommand::ROTATE:
+            // LSP COMPLIANCE: rotate() is called uniformly for ALL shapes
+            // NOTE: Do NOT add "if (type != O_PIECE) rotate()" logic!
+            // This would violate LSP - all shapes must handle rotation identically
             tetromino.rotate();
             // Note: Wall-kick could be implemented here if needed
             break;

@@ -8,6 +8,16 @@
  *   1. Create the strategy class
  *   2. Add a factory method
  *   3. Update the enum if needed
+ * 
+ * LSP COMPLIANCE:
+ *   All strategies created by this factory maintain identical contracts.
+ *   Clients can substitute strategies at runtime without code changes.
+ *   
+ *   GUARANTEED: All returned strategies are substitutable:
+ *   - Same parameter contract (linesCleared, level, score)
+ *   - Same return type (non-negative int)
+ *   - No exceptions
+ *   - No special preconditions or "modes"
  * ============================================================================
  */
 
@@ -29,8 +39,9 @@ public:
     /**
      * Create a scoring strategy by type
      * 
+     * LSP GUARANTEE: Any strategy returned maintains identical contract
      * @param type The scoring strategy type to create
-     * @return Unique pointer to a new ScoringStrategy instance
+     * @return Unique pointer to a new ScoringStrategy instance (substitutable)
      */
     static std::unique_ptr<ScoringStrategy> createStrategy(ScoringType type) {
         switch (type) {

@@ -87,13 +87,18 @@ void Tetromino::copyPiece(const int source[PIECE_SIZE][PIECE_SIZE],
 }
 
 void Tetromino::rotate() {
-    // Increment rotation state
+    // LSP GUARANTEE: This method updates rotation state uniformly for ALL shapes
+    // IMPORTANT: Even O-piece (square) must update its rotation counter!
+    // This fulfills the postcondition: "rotation state is always incremented"
+    // Clients should NEVER check shape type to skip or handle rotation specially
+    
     currentRotation = (currentRotation + 1) % 4;
     
-    // Invalidate cache
+    // Invalidate cache so next getPieceAt/getCurrentPiece call updates
     lastRotationState = -1;
     
     // Note: Collision detection and wall-kick is handled by GameEngine
+    // (delegated by contract, not handled by shape-specific logic)
 }
 
 void Tetromino::updateRotatedPiece() const {
