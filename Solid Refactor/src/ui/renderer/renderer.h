@@ -2,6 +2,7 @@
  * ============================================================================
  * FILE: renderer.h
  * PURPOSE: Renderer class - Handles all game visualization
+ *          NOW SUPPORTING POLYMORPHIC SHAPE COLORS (OCP-COMPLIANT)
  * 
  * RESPONSIBILITY: Render game state to screen
  * 
@@ -10,12 +11,14 @@
  *   - Rendering the Tetromino (falling piece)
  *   - Drawing UI elements (HUD, score, next piece preview)
  *   - Drawing grid lines and visual guides
+ *   - Using polymorphic shapes to determine colors (no hardcoded mappings)
  * 
  * This class DOES NOT:
  *   - Perform game logic
  *   - Handle collision detection
  *   - Manage piece rotation or movement
  *   - Know about menu states or game state machine
+ *   - Know about specific shape types (delegates to shapes for colors)
  * ============================================================================
  */
 
@@ -48,7 +51,7 @@ private:
     void drawHUD(int score, const Tetromino& tetromino);
     void drawBackground();
     
-    // Color utilities
+    // Color utilities (now polymorphic!)
     void setColorForPieceType(int type);
     
 public:
@@ -63,6 +66,9 @@ public:
     // Getters for window dimensions
     int getBoardPixelWidth() const { return 20 * BLOCK_SIZE; }
     int getBoardPixelHeight() const { return 20 * BLOCK_SIZE; }
+    
+    // New: Accessor for SDL renderer (needed by GameRenderer strategy)
+    SDL_Renderer* getSDLRenderer() const { return renderer; }
 };
 
 #endif // RENDERER_H
