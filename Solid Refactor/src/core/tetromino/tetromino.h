@@ -2,7 +2,7 @@
  * ============================================================================
  * FILE: tetromino.h
  * PURPOSE: Tetromino class - Manages piece shapes, rotation, and position
- *          NOW USING STRATEGY PATTERN FOR SHAPE ABSTRACTION (OCP-COMPLIANT)
+ *          NOW IMPLEMENTS ITransformable (ISP Refactoring)
  * 
  * RESPONSIBILITY: Handle all piece-related data and transformations
  * 
@@ -22,6 +22,12 @@
  *   
  *   [✓] No Shape-Specific Preconditions: Every shape can be rotated, moved,
  *       and rendered without type-checking
+ * 
+ * INTERFACE SEGREGATION PRINCIPLE (ISP) Improvements:
+ *   This class now explicitly implements ITransformable
+ *   - Code can depend on ITransformable& for movement/rotation only
+ *   - GameEngine can request transformation operations specifically
+ *   - Reduces coupling and increases interface clarity
  * 
  * SINGLE RESPONSIBILITY: This class is responsible ONLY for:
  *   - Managing current piece rotation state (now delegated to TetriminoShape)
@@ -51,9 +57,18 @@
 #define PIECE_SIZE 4
 
 #include "../interfaces/tetromino_shape.h"
+#include "../interfaces/transformable.h"
 #include <memory>
 
-class Tetromino {
+/**
+ * Tetromino class - Manages piece shapes, rotation, and position
+ * 
+ * ISP COMPLIANCE:
+ *   - Implements ITransformable for movement/rotation operations
+ *   - Clients can depend on ITransformable& without needing full class knowledge
+ *   - Separates transformation from shape queries
+ */
+class Tetromino : public ITransformable {
 private:
     // Use Strategy Pattern: own TetriminoShape instances, not data
     std::unique_ptr<TetriminoShape> currentShape;
@@ -90,26 +105,43 @@ public:
     void initialize();
     void spawnNewPiece();
     
-    // Position management
-    void setPosition(int x, int y);
-    void moveBy(int dx, int dy);
-    int getPosX() const { return posX; }
-    int getPosY() const { return posY; }
+    // ITransformable Implementation
+    // =================================
+    /**
+     * Set absolute position (ISP: ITransformable)
+     */
+    void setPosition(int x, int y) override;
     
-    // Rotation - MUST update state for all shapes (LSP contract)
-    // PRECONDITION: None (all shapes must support rotation without special conditions)
-    // POSTCONDITION: currentRotation increments, cache invalidated
-    // GUARANTEE: Called uniformly regardless of shape type (even O-pieces)
-    void rotate();
+    /**
+     * Move by relative offset (ISP: ITransformable)
+     */
+    void moveBy(int dx, int dy) override;
     
-    // Piece data access (maintains backward compatibility)
+    /**
+     * Rotate 90 degrees clockwise (ISP: ITransformable)
+     * MUST update state for all shapes (LSP contract)
+     */
+    void rotate() override;
+    
+    /**
+     * Get X position (ISP: ITransformable)
+     */
+    int getPosX() const override { return posX; }
+    
+    /**
+     * Get Y position (ISP: ITransformable)
+     */
+    int getPosY() const override { return posY; }
+    
+    // Additional piece data access (maintains backward compatibility)
+    // ================================================================
     int getCurrentType() const;
     int getNextType() const;
     const int* getCurrentPiece() const;
     const int* getNextPiece() const;
     int getPieceAt(int x, int y) const;
     
-    // NEW: Access the shape objects for polymorphic operations
+    // Access the shape objects for polymorphic operations
     TetriminoShape* getCurrentShape() const { return currentShape.get(); }
     TetriminoShape* getNextShape() const { return nextShape.get(); }
     
