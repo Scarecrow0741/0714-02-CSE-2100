@@ -10,6 +10,7 @@ INCLUDE = -I./src/include
 SOURCES = \
 	src/core/board/board.cpp \
 	src/core/tetromino/tetromino.cpp \
+	src/core/tetromino/shapes/tetromino_shapes.cpp \
 	src/core/game_engine/game_engine.cpp \
 	src/input/input_handler.cpp \
 	src/ui/renderer/renderer.cpp \
@@ -20,7 +21,7 @@ SOURCES = \
 	src/main/main.cpp
 
 # Output
-TARGET = tetris_oop.exe
+TARGET = tetris.exe
 
 # Default target
 all: $(TARGET)

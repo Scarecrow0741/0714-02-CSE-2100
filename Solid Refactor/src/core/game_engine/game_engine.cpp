@@ -1,18 +1,34 @@
 /*
  * ============================================================================
  * FILE: game_engine.cpp
- * PURPOSE: Implementation of GameEngine class
+ * PURPOSE: Implementation of GameEngine class (OCP-COMPLIANT)
+ * 
+ * DESIGN IMPROVEMENTS:
+ *   - Uses ScoringStrategy for flexible scoring systems
+ *   - Uses GameRenderer strategy for different game states
+ *   - Scoring logic is decoupled from game logic
+ *   - Rendering logic is decoupled from game state management
  * ============================================================================
  */
 
 #include "game_engine.h"
+#include "../scoring/scoring_factory.h"
+#include "../../ui/renderers/game_state_renderers.h"
 
 #define DROP_DELAY 500  // Milliseconds between automatic piece drops
 
 GameEngine::GameEngine(SDL_Renderer* sdlRenderer, TTF_Font* sdlFont)
     : tetromino(), inputHandler(), renderer(sdlRenderer, sdlFont),
-      gameState(GameStateEnum::MENU), score(0), gameOver(false),
+      gameState(GameStateEnum::MENU), score(0), level(1), gameOver(false),
       lastDropTime(0), dropDelay(DROP_DELAY) {
+    
+    // Initialize strategies with defaults
+    scoringStrategy = ScoringFactory::createStrategy(ScoringType::CLASSIC);
+    
+    // Initialize game state renderers (each manages its own rendering)
+    playingRenderer = std::make_unique<PlayingRenderer>(&renderer);
+    menuRenderer = std::make_unique<MenuRenderer>(&renderer);
+    gameOverRenderer = std::make_unique<GameOverRenderer>(&renderer);
 }
 
 GameEngine::~GameEngine() {
@@ -22,6 +38,7 @@ GameEngine::~GameEngine() {
 void GameEngine::startNewGame() {
     board.clear();
     score = 0;
+    level = 1;
     gameOver = false;
     tetromino.initialize();
     lastDropTime = SDL_GetTicks();
@@ -152,10 +169,12 @@ void GameEngine::updateGameLogic(int currentTime) {
             // Piece has landed, lock it to the board
             lockPieceToBoard();
             
-            // Clear complete lines and update score
+            // Clear complete lines and update score using STRATEGY PATTERN
             int linesCleared = board.clearCompleteLines();
             if (linesCleared > 0) {
-                score += linesCleared * linesCleared * 100;
+                // Delegate scoring to strategy (OCP: no hardcoded scoring logic here!)
+                int points = scoringStrategy->calculateScore(linesCleared, level, score);
+                score += points;
             }
             
             // Spawn next piece
@@ -170,16 +189,18 @@ void GameEngine::update(int currentTime) {
 }
 
 void GameEngine::render() {
+    // Use STRATEGY PATTERN for rendering different game states (OCP: easy to add new states!)
+    SDL_Renderer* sdlRenderer = renderer.getSDLRenderer();  // Need to add this to Renderer
+    
     switch (gameState) {
         case GameStateEnum::PLAYING:
-            renderer.render(board, tetromino, score);
+            playingRenderer->render(sdlRenderer, board, tetromino, score);
             break;
         case GameStateEnum::MENU:
-            // Menu rendering should be handled separately
-            renderer.renderMenu(0);
+            menuRenderer->render(sdlRenderer, board, tetromino, score);
             break;
         case GameStateEnum::GAME_OVER:
-            renderer.renderGameOver(score);
+            gameOverRenderer->render(sdlRenderer, board, tetromino, score);
             break;
         case GameStateEnum::QUIT:
             // No rendering needed

@@ -1,13 +1,19 @@
 /*
  * ============================================================================
  * FILE: renderer.cpp
- * PURPOSE: Implementation of Renderer class
+ * PURPOSE: Implementation of Renderer class (OCP-COMPLIANT)
+ * 
+ * DESIGN IMPROVEMENTS:
+ *   - Colors are now obtained from TetriminoShape objects (polymorphic)
+ *   - Removes hardcoded color switch statement
+ *   - Easy to extend: new shapes automatically get their colors
  * ============================================================================
  */
 
 #include "renderer.h"
 #include "../../core/board/board.h"
 #include "../../core/tetromino/tetromino.h"
+#include "../../core/tetromino/shapes/shape_factory.h"
 #include <cstdio>
 
 Renderer::Renderer(SDL_Renderer* sdlRenderer, TTF_Font* sdlFont)
@@ -19,16 +25,15 @@ Renderer::~Renderer() {
 }
 
 void Renderer::setColorForPieceType(int type) {
-    int c = type % 7;
-    switch (c) {
-        case 0: SDL_SetRenderDrawColor(renderer, 150, 220, 255, 255); break; // I - cyan
-        case 1: SDL_SetRenderDrawColor(renderer, 0, 128, 255, 255); break;   // J - blue
-        case 2: SDL_SetRenderDrawColor(renderer, 255, 165, 0, 255); break;   // L - orange
-        case 3: SDL_SetRenderDrawColor(renderer, 255, 220, 0, 255); break;   // O - yellow
-        case 4: SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); break;     // S - green
-        case 5: SDL_SetRenderDrawColor(renderer, 160, 32, 240, 255); break;  // T - purple
-        case 6: SDL_SetRenderDrawColor(renderer, 255, 80, 80, 255); break;   // Z - red
-        default: SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); break;
+    // NEW: Use polymorphic shape to get color (OCP: no hardcoded switch statement!)
+    auto shape = ShapeFactory::createShape(type);
+    if (shape) {
+        unsigned char r, g, b, a;
+        shape->getColor(r, g, b, a);
+        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    } else {
+        // Safe fallback
+        SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
     }
 }
 
