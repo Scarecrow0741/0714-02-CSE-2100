@@ -1,34 +1,49 @@
 /*
  * ============================================================================
  * FILE: game_engine.cpp
- * PURPOSE: Implementation of GameEngine class (OCP-COMPLIANT)
+ * PURPOSE: Implementation of GameEngine class (DIP-COMPLIANT)
  * 
- * DESIGN IMPROVEMENTS:
- *   - Uses ScoringStrategy for flexible scoring systems
- *   - Uses GameRenderer strategy for different game states
- *   - Scoring logic is decoupled from game logic
- *   - Rendering logic is decoupled from game state management
+ * DEPENDENCY INVERSION PRINCIPLE (DIP):
+ *   - No longer creates InputHandler, Renderer, or ScoringStrategy internally
+ *   - Receives all dependencies via constructor parameters
+ *   - Depends only on abstractions (IInputProvider, ScoringStrategy)
+ *   - Concrete implementations are created and wired in main.cpp (composition root)
+ *   - All external dependencies are owned by GameEngine (via unique_ptr)
+ * 
+ * BENEFITS:
+ *   - Easy to test: MockInputProvider, MockScoringStrategy can be injected
+ *   - Easy to extend: New input/scoring/rendering implementations without changing GameEngine
+ *   - Clear dependencies: Constructor shows exactly what GameEngine needs
+ *   - Single responsibility: GameEngine orchestrates, doesn't create dependencies
  * ============================================================================
  */
 
 #include "game_engine.h"
-#include "../scoring/scoring_factory.h"
+#include "../../ui/renderer/renderer.h"
 #include "../../ui/renderers/game_state_renderers.h"
 
 #define DROP_DELAY 500  // Milliseconds between automatic piece drops
 
-GameEngine::GameEngine(SDL_Renderer* sdlRenderer, TTF_Font* sdlFont)
-    : tetromino(), inputHandler(), renderer(sdlRenderer, sdlFont),
+GameEngine::GameEngine(
+    std::unique_ptr<IInputProvider> inputProvider,
+    std::unique_ptr<Renderer> renderer,
+    std::unique_ptr<ScoringStrategy> scoringStrategy,
+    std::unique_ptr<GameRenderer> playingRenderer,
+    std::unique_ptr<GameRenderer> menuRenderer,
+    std::unique_ptr<GameRenderer> gameOverRenderer
+)
+    : board(), tetromino(),
+      inputProvider(std::move(inputProvider)),
+      renderer(std::move(renderer)),
+      scoringStrategy(std::move(scoringStrategy)),
+      playingRenderer(std::move(playingRenderer)),
+      menuRenderer(std::move(menuRenderer)),
+      gameOverRenderer(std::move(gameOverRenderer)),
       gameState(GameStateEnum::MENU), score(0), level(1), gameOver(false),
       lastDropTime(0), dropDelay(DROP_DELAY) {
     
-    // Initialize strategies with defaults
-    scoringStrategy = ScoringFactory::createStrategy(ScoringType::CLASSIC);
-    
-    // Initialize game state renderers (each manages its own rendering)
-    playingRenderer = std::make_unique<PlayingRenderer>(&renderer);
-    menuRenderer = std::make_unique<MenuRenderer>(&renderer);
-    gameOverRenderer = std::make_unique<GameOverRenderer>(&renderer);
+    // All components are now fully initialized by caller (main.cpp)
+    // GameEngine just uses what it's given
 }
 
 GameEngine::~GameEngine() {
@@ -120,14 +135,16 @@ void GameEngine::spawnNewPiece() {
 
 void GameEngine::handleInput() {
     // Poll events (handles quit events)
-    inputHandler.pollEvents();
+    if (inputProvider) {
+        inputProvider->pollEvents();
+    }
     
     if (gameState != GameStateEnum::PLAYING) {
         return;
     }
     
     // Get the current command
-    GameCommand cmd = inputHandler.getCommand();
+    GameCommand cmd = inputProvider ? inputProvider->getCommand() : GameCommand::NONE;
     
     switch (cmd) {
         case GameCommand::MOVE_LEFT:
@@ -196,18 +213,29 @@ void GameEngine::update(int currentTime) {
 }
 
 void GameEngine::render() {
-    // Use STRATEGY PATTERN for rendering different game states (OCP: easy to add new states!)
-    SDL_Renderer* sdlRenderer = renderer.getSDLRenderer();  // Need to add this to Renderer
+    // Use STRATEGY PATTERN for rendering different game states
+    // Renderer is now injected as a dependency, accessed via unique_ptr
+    SDL_Renderer* sdlRenderer = renderer ? renderer->getSDLRenderer() : nullptr;
+    
+    if (!sdlRenderer) {
+        return;  // No renderer available
+    }
     
     switch (gameState) {
         case GameStateEnum::PLAYING:
-            playingRenderer->render(sdlRenderer, board, tetromino, score);
+            if (playingRenderer) {
+                playingRenderer->render(sdlRenderer, board, tetromino, score);
+            }
             break;
         case GameStateEnum::MENU:
-            menuRenderer->render(sdlRenderer, board, tetromino, score);
+            if (menuRenderer) {
+                menuRenderer->render(sdlRenderer, board, tetromino, score);
+            }
             break;
         case GameStateEnum::GAME_OVER:
-            gameOverRenderer->render(sdlRenderer, board, tetromino, score);
+            if (gameOverRenderer) {
+                gameOverRenderer->render(sdlRenderer, board, tetromino, score);
+            }
             break;
         case GameStateEnum::QUIT:
             // No rendering needed
