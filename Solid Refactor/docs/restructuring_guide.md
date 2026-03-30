@@ -153,9 +153,11 @@ raw keystrokes into game commands (e.g., MoveLeft, Rotate).
 Refactor the Renderer Class: Ensure this class only takes a Board or Tetromino as a reference and draws them. 
 It should contain no game rules or collision logic.
 
-The GameEngine Coordinator: Create a class that manages the 'Heartbeat' (the game loop), holding instances 
-of the other classes and facilitating their communication. You may change the folder structure as you see fit 
-according to the objectives."
+The GameEngine Coordinator: Create a class that manages the 'Heartbeat' (the game loop), holding instances of the other classes and facilitating their communication. 
+
+Create new subfolder structure in src/core/ for these classes. Refactor main.cpp to use the GameEngine as the central coordinator .
+
+Create a professional Makefile with targets for building and running the project. Remove temporary build scripts. Update all include paths to reflect the new folder structure."
 ```
 
 ### Implementation Applied
