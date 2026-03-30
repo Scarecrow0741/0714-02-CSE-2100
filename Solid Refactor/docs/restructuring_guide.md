@@ -1511,6 +1511,85 @@ document this capability in interface contracts.
 Scoring Strategy Uniformity: Ensure all ScoringStrategy implementations accept identical parameter 
 ranges and return values within the same bounds."
 ```
+### Complete Folder Structure - Step 4 (LSP-Compliant)
+
+```
+d:
+├── ARCHITECTURE_AND_COMPILATION.md
+├── Makefile                        (12 source file compilation)
+├── tetris.exe                      (597 KB - fully functional executable)
+│
+├── docs/
+│   ├── restructuring_guide.md      (This file - documentation of all refactoring steps)
+│
+├── lib/
+│   ├── libSDL2_test.la
+│   ├── libSDL2.la
+│   ├── libSDL2main.la
+│   ├── cmake/
+│   │   └── SDL2/
+│   │       ├── sdl2-config-version.cmake
+│   │       └── sdl2-config.cmake
+│   └── pkgconfig/
+│       └── sdl2.pc
+│
+├── src/
+│   ├── core/
+│   │   ├── board/
+│   │   │   ├── board.h             (Board class - Grid state & operations)
+│   │   │   └── board.cpp           (✅ LSP: Uniform piece handling)
+│   │   │
+│   │   ├── tetromino/
+│   │   │   ├── tetromino.h         (Tetromino class - Piece data & transformations)
+│   │   │   ├── tetromino.cpp       (✅ LSP: Uniform rotation contract)
+│   │   │   │
+│   │   │   └── shapes/
+│   │   │       ├── tetromino_shape.h    (Abstract base interface - 43 lines)
+│   │   │       ├── tetromino_shapes.h   (✅ LSP: 7 concrete shape implementations)
+│   │   │       ├── tetromino_shapes.cpp (✅ LSP: Static definitions for all 7 shapes)
+│   │   │       └── shape_factory.h      (Factory - Creates random/specific shapes)
+│   │   │
+│   │   ├── game_engine/
+│   │   │   ├── game_engine.h       (GameEngine - Coordinator - Uses ScoringStrategy)
+│   │   │   └── game_engine.cpp     (✅ LSP: Zero type-checking, uniform substitution)
+│   │   │
+│   │   ├── interfaces/             (Abstract interfaces - LSP contracts)
+│   │   │   ├── tetromino_shape.h   (TetriminoShape interface - 100+ lines LSP docs)
+│   │   │   ├── scoring_strategy.h  (ScoringStrategy interface - 80+ lines LSP docs)
+│   │   │   ├── drawable.h          (Drawable interface - Renderable objects)
+│   │   │   └── game_renderer.h     (GameRenderer interface - Render strategy)
+│   │   │
+│   │   └── scoring/
+│   │       ├── scoring_strategies.h   (✅ LSP: Original, LevelBased, Combo strategies)
+│   │       └── scoring_factory.h      (Factory - Creates scoring strategies)
+│   │
+│   ├── input/
+│   │   ├── input_handler.h         (InputHandler class - SDL event handling)
+│   │   └── input_handler.cpp       (✅ LSP: No strategy-specific logic)
+│   │
+│   ├── ui/
+│   │   ├── renderer/
+│   │   │   ├── renderer.h          (Renderer class - Game state rendering)
+│   │   │   └── renderer.cpp        (✅ LSP: Uniform shape rendering, no type-checking)
+│   │   │
+│   │   └── menu/
+│   │       ├── button.h            (Button class - SRP: Button rendering & hit detection)
+│   │       ├── button.cpp
+│   │       ├── menu_screen.h       (MenuScreen class - SRP: Menu rendering & interaction)
+│   │       ├── menu_screen.cpp
+│   │       ├── game_over_screen.h  (GameOverScreen class - SRP: Game-over screen)
+│   │       ├── game_over_screen.cpp
+│   │       └── menu.cpp            (Facade - Backward compatibility)
+│   │
+│   ├── main/
+│   │   └── main.cpp                (✅ Main entry - COMPLETELY UNCHANGED from Step 3)
+│   │
+│   └── include/
+│       ├── tetris.h                (Central header - Game constants, structs)
+│       └── SDL2/                   (50+ SDL2 development headers)
+│           ├── SDL.h
+│           ├── SDL_*.h
+│           └── ...
 
 ### Implementation Applied
 
@@ -2090,94 +2169,6 @@ void GameEngine::update() {
 
 ---
 
-### Complete Folder Structure - Step 4 (LSP-Compliant)
-
-```
-d:\temp1\
-├── ARCHITECTURE_AND_COMPILATION.md
-├── Makefile                        (12 source file compilation)
-├── tetris.exe                      (597 KB - fully functional executable)
-│
-├── docs/
-│   ├── restructuring_guide.md      (This file - documentation of all refactoring steps)
-│
-├── lib/
-│   ├── libSDL2_test.la
-│   ├── libSDL2.la
-│   ├── libSDL2main.la
-│   ├── cmake/
-│   │   └── SDL2/
-│   │       ├── sdl2-config-version.cmake
-│   │       └── sdl2-config.cmake
-│   └── pkgconfig/
-│       └── sdl2.pc
-│
-├── src/
-│   ├── core/
-│   │   ├── board/
-│   │   │   ├── board.h             (Board class - Grid state & operations)
-│   │   │   └── board.cpp           (✅ LSP: Uniform piece handling)
-│   │   │
-│   │   ├── tetromino/
-│   │   │   ├── tetromino.h         (Tetromino class - Piece data & transformations)
-│   │   │   ├── tetromino.cpp       (✅ LSP: Uniform rotation contract)
-│   │   │   │
-│   │   │   └── shapes/
-│   │   │       ├── tetromino_shape.h    (Abstract base interface - 43 lines)
-│   │   │       ├── tetromino_shapes.h   (✅ LSP: 7 concrete shape implementations)
-│   │   │       ├── tetromino_shapes.cpp (✅ LSP: Static definitions for all 7 shapes)
-│   │   │       └── shape_factory.h      (Factory - Creates random/specific shapes)
-│   │   │
-│   │   ├── game_engine/
-│   │   │   ├── game_engine.h       (GameEngine - Coordinator - Uses ScoringStrategy)
-│   │   │   └── game_engine.cpp     (✅ LSP: Zero type-checking, uniform substitution)
-│   │   │
-│   │   ├── interfaces/             (Abstract interfaces - LSP contracts)
-│   │   │   ├── tetromino_shape.h   (TetriminoShape interface - 100+ lines LSP docs)
-│   │   │   ├── scoring_strategy.h  (ScoringStrategy interface - 80+ lines LSP docs)
-│   │   │   ├── drawable.h          (Drawable interface - Renderable objects)
-│   │   │   └── game_renderer.h     (GameRenderer interface - Render strategy)
-│   │   │
-│   │   └── scoring/
-│   │       ├── scoring_strategies.h   (✅ LSP: Original, LevelBased, Combo strategies)
-│   │       └── scoring_factory.h      (Factory - Creates scoring strategies)
-│   │
-│   ├── input/
-│   │   ├── input_handler.h         (InputHandler class - SDL event handling)
-│   │   └── input_handler.cpp       (✅ LSP: No strategy-specific logic)
-│   │
-│   ├── ui/
-│   │   ├── renderer/
-│   │   │   ├── renderer.h          (Renderer class - Game state rendering)
-│   │   │   └── renderer.cpp        (✅ LSP: Uniform shape rendering, no type-checking)
-│   │   │
-│   │   └── menu/
-│   │       ├── button.h            (Button class - SRP: Button rendering & hit detection)
-│   │       ├── button.cpp
-│   │       ├── menu_screen.h       (MenuScreen class - SRP: Menu rendering & interaction)
-│   │       ├── menu_screen.cpp
-│   │       ├── game_over_screen.h  (GameOverScreen class - SRP: Game-over screen)
-│   │       ├── game_over_screen.cpp
-│   │       └── menu.cpp            (Facade - Backward compatibility)
-│   │
-│   ├── main/
-│   │   └── main.cpp                (✅ Main entry - COMPLETELY UNCHANGED from Step 3)
-│   │
-│   └── include/
-│       ├── tetris.h                (Central header - Game constants, structs)
-│       └── SDL2/                   (50+ SDL2 development headers)
-│           ├── SDL.h
-│           ├── SDL_*.h
-│           └── ...
-│
-└── LSP Documentation Files (7 files - outside src):
-    ├── LSP_COMPLIANCE_GUIDE.md               (11,000+ words comprehensive guide)
-    ├── LSP_REFACTORING_SUMMARY.md            (5,000+ words summary)
-    ├── LSP_QUICK_REFERENCE.md                (3,500+ words reference)
-    ├── LSP_DOCUMENTATION_INDEX.md            (Navigation guide)
-    ├── LSP_IMPLEMENTATION_RECORD.md          (12,000+ words detailed record)
-    ├── VISUAL_SUMMARY.md                     (Visual reference)
-    └── README_LSP.md                         (Quick start guide)
 ```
 
 **Total Source Files to Compile (Step 4): 12**
@@ -2355,6 +2346,92 @@ Update Concrete Classes: Update shapes to inherit from multiple small interfaces
   instead of one giant TetriminoShape base class.
   
 Update GameEngine: Accept specific interfaces it needs (e.g., ITransformable&).
+```
+
+### Complete Folder Structure - Step 5 (ISP-Compliant)
+
+```
+d:
+├── Makefile
+├── tetris.exe
+├── docs/
+│   └── restructuring_guide.md
+├── lib/
+│   ├── libSDL2_test.la
+│   ├── libSDL2.la
+│   ├── libSDL2main.la
+│   ├── cmake/
+│   │   └── SDL2/
+│   │       ├── sdl2-config-version.cmake
+│   │       └── sdl2-config.cmake
+│   └── pkgconfig/
+│       └── sdl2.pc
+│
+└── src/
+    ├── core/
+    │   ├── board/                           (SRP: Manages grid state)
+    │   │   ├── board.h
+    │   │   └── board.cpp
+    │   │
+    │   ├── tetromino/                       (SRP + LSP: Piece management)
+    │   │   ├── tetromino.h                  ✅ Implements ITransformable
+    │   │   ├── tetromino.cpp
+    │   │   └── shapes/
+    │   │       ├── tetromino_shape.h        ✅ Inherits IQueryableShape + IColoredShape
+    │   │       ├── tetromino_shapes.h       ✅ 7 concrete shapes (I,O,T,S,Z,J,L)
+    │   │       ├── tetromino_shapes.cpp
+    │   │       └── shape_factory.h          (Factory pattern)
+    │   │
+    │   ├── game_engine/                     (SRP + OCP: Coordinator)
+    │   │   ├── game_engine.h                ✅ Uses IInputProvider, IGameStateRenderer
+    │   │   └── game_engine.cpp
+    │   │
+    │   ├── interfaces/                      ✨ ISP: Segregated interfaces
+    │   │   ├── transformable.h              ✨ NEW - ITransformable (movement/rotation)
+    │   │   ├── queryable_shape.h            ✨ NEW - IQueryableShape (data queries)
+    │   │   ├── colored_shape.h              ✨ NEW - IColoredShape (color rendering)
+    │   │   ├── input_provider.h             ✨ NEW - IInputProvider (input abstraction)
+    │   │   ├── game_state_renderer.h        ✨ NEW - IGameStateRenderer (game rendering)
+    │   │   ├── screen_renderer.h            ✨ NEW - IScreenRenderer (UI rendering)
+    │   │   ├── tetromino_shape.h            (Composite: IQueryableShape + IColoredShape)
+    │   │   ├── drawable.h                   (IDrawable interface)
+    │   │   ├── game_renderer.h              (Backward compatibility)
+    │   │   └── scoring_strategy.h           (ScoringStrategy interface)
+    │   │
+    │   └── scoring/                         (OCP: Scoring strategies)
+    │       ├── scoring_strategies.h         (Original, LevelBased, Combo)
+    │       └── scoring_factory.h            (Factory pattern)
+    │
+    ├── input/                               (SRP: Input handling)
+    │   ├── input_handler.h                  ✅ Implements IInputProvider
+    │   └── input_handler.cpp
+    │
+    ├── ui/
+    │   ├── renderer/                        (SRP: Game rendering)
+    │   │   ├── renderer.h
+    │   │   └── renderer.cpp
+    │   │
+    │   ├── menu/                            (SRP: Menu UI)
+    │   │   ├── button.h                     (Button class)
+    │   │   ├── button.cpp
+    │   │   ├── menu_screen.h                (MenuScreen class)
+    │   │   ├── menu_screen.cpp
+    │   │   ├── game_over_screen.h           (GameOverScreen class)
+    │   │   ├── game_over_screen.cpp
+    │   │   └── menu.cpp                     (Facade)
+    │   │
+    │   └── renderers/                       (Renderer strategies)
+    │       └── game_state_renderers.h       (Concrete renderers)
+    │
+    ├── main/
+    │   └── main.cpp                         ✅ COMPLETELY UNCHANGED
+    │
+    └── include/
+        ├── tetris.h                         (Core constants & types)
+        └── SDL2/                            (SDL2 headers - 100+ files)
+            ├── SDL.h
+            ├── SDL_*.h
+            └── ...
 ```
 
 ### Implementation Applied
