@@ -6,8 +6,8 @@
  */
 
 #include "renderer.h"
-#include "../core/board/board.h"
-#include "../core/tetromino/tetromino.h"
+#include "../../core/board/board.h"
+#include "../../core/tetromino/tetromino.h"
 #include <cstdio>
 
 Renderer::Renderer(SDL_Renderer* sdlRenderer, TTF_Font* sdlFont)

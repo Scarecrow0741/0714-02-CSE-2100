@@ -30,7 +30,7 @@
 #include "../board/board.h"
 #include "../tetromino/tetromino.h"
 #include "../../input/input_handler.h"
-#include "../../ui/renderer.h"
+#include "../../ui/renderer/renderer.h"
 
 enum class GameStateEnum {
     MENU,
