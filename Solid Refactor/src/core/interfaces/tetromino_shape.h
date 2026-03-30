@@ -2,12 +2,15 @@
  * ============================================================================
  * FILE: tetromino_shape.h
  * PURPOSE: Abstract base class for Tetromino shapes - Applies Strategy Pattern
+ *          NOW SEGREGATED INTO FOCUSED INTERFACES (ISP Refactoring)
  * 
- * RESPONSIBILITY: Define interface for different Tetromino shape types
+ * RESPONSIBILITY: Define composite interface for different Tetromino shape types
  * 
- * DESIGN PRINCIPLE: Open/Closed Principle (OCP)
+ * DESIGN PRINCIPLE: Interface Segregation Principle (ISP) + Open/Closed Principle (OCP)
  *   - OPEN for extension: New shapes can be added by creating new subclasses
  *   - CLOSED for modification: No need to modify Tetromino or GameEngine to add shapes
+ *   - SEGREGATED: Now inherits from IQueryableShape and IColoredShape
+ *   - BACKWARD COMPATIBLE: Existing code continues to work via TetriminoShape
  * 
  * LISKOV SUBSTITUTION PRINCIPLE (LSP):
  *   - All subclasses MUST maintain the contracts below
@@ -15,6 +18,13 @@
  *     without changing program correctness
  *   - All shapes use the same rotation convention (90° clockwise per rotation)
  *   - All shapes return valid matrices and consistent rendering data
+ * 
+ * ISP IMPROVEMENT:
+ *   - TetriminoShape now explicitly inherits from IQueryableShape and IColoredShape
+ *   - Code can depend on IQueryableShape& for queries only
+ *   - Code can depend on IColoredShape& for color only
+ *   - Code can depend on TetriminoShape& for all functionality
+ *   - Clients not forced to depend on unneeded methods
  * 
  * STRATEGY PATTERN: Each concrete shape (I, J, L, O, S, T, Z) is a strategy
  *   allowing the Tetromino to use different shape implementations without
@@ -27,95 +37,32 @@
 
 #define PIECE_SIZE 4
 
-class TetriminoShape {
+#include "queryable_shape.h"
+#include "colored_shape.h"
+
+/**
+ * Composite interface for Tetromino shapes
+ * Combines IQueryableShape and IColoredShape for convenience
+ * 
+ * ISP COMPLIANCE:
+ *   - New code can depend on segregated interfaces (IQueryableShape, IColoredShape)
+ *   - Backward compatibility maintained (existing code uses TetriminoShape)
+ *   - Multiple inheritance allows flexible interface combinations
+ * 
+ * INHERITED METHODS (from IQueryableShape):
+ *   - const int* getShapeMatrix() const = 0
+ *   - int getTypeId() const = 0
+ *   - const char* getName() const = 0
+ * 
+ * INHERITED METHODS (from IColoredShape):
+ *   - void getColor(unsigned char&, unsigned char&, unsigned char&, unsigned char&) const = 0
+ */
+class TetriminoShape : public IQueryableShape, public IColoredShape {
 public:
     virtual ~TetriminoShape() = default;
     
-    /**
-     * Get the 4x4 matrix representing this shape in its base rotation state
-     * 
-     * PRECONDITIONS:
-     *   - Object is properly constructed
-     * 
-     * POSTCONDITIONS:
-     *   - Returns valid pointer to 4x4 array (never nullptr)
-     *   - Array contains only values 0 or 1
-     *   - Array layout is always [row][col] with row=0 at top
-     *   - Result is deterministic (always same for same object)
-     *   - Result is immutable during object lifetime
-     * 
-     * LSP GUARANTEE:
-     *   - Every shape's matrix is a valid Tetromino piece (connected and 4 cells)
-     *   - Can be rotated consistently using standard 90° clockwise rotation
-     *   - No shape-specific preconditions for rotation
-     * 
-     * @return Pointer to a 4x4 array where 1 = filled, 0 = empty
-     */
-    virtual const int* getShapeMatrix() const = 0;
-    
-    /**
-     * Get a unique identifier for this shape (0-6 for standard Tetris)
-     * 
-     * PRECONDITIONS:
-     *   - Object is properly constructed
-     * 
-     * POSTCONDITIONS:
-     *   - Returns a non-negative integer in range [0, N) where N = num_shape_types
-     *   - Result is deterministic (always same for same object)
-     *   - Two shapes with different IDs are different types
-     *   - ID uniquely identifies the shape type
-     * 
-     * LSP GUARANTEE:
-     *   - Type ID is used for display/debugging purposes only
-     *   - GameEngine does NOT perform type-based behavior changes
-     *   - ID is never used for collision detection or movement decisions
-     * 
-     * @return Type ID for this shape
-     */
-    virtual int getTypeId() const = 0;
-    
-    /**
-     * Get the color for this shape as RGBA values
-     * 
-     * PRECONDITIONS:
-     *   - Object is properly constructed
-     *   - Output parameters are valid references
-     * 
-     * POSTCONDITIONS:
-     *   - Sets r, g, b, a to values in range [0, 255]
-     *   - Color is consistent across multiple calls
-     *   - Color uniquely identifies this shape type
-     * 
-     * LSP GUARANTEE:
-     *   - Color is determined by shape type, not game state
-     *   - No shape requires special rendering conditions (e.g., "power-up required to display")
-     *   - All shapes render with same visibility/opacity rules
-     * 
-     * @param r Red component (0-255) - output reference
-     * @param g Green component (0-255) - output reference
-     * @param b Blue component (0-255) - output reference
-     * @param a Alpha component (0-255) - output reference
-     */
-    virtual void getColor(unsigned char& r, unsigned char& g, unsigned char& b, unsigned char& a) const = 0;
-    
-    /**
-     * Get the human-readable name of this shape (for debugging/display)
-     * 
-     * PRECONDITIONS:
-     *   - Object is properly constructed
-     * 
-     * POSTCONDITIONS:
-     *   - Returns valid C-string (never nullptr)
-     *   - String is null-terminated
-     *   - String describes the shape (e.g., "I-Piece", "O-Piece")
-     *   - Name is consistent across multiple calls
-     * 
-     * LSP GUARANTEE:
-     *   - Name is for debugging only; never used for behavior decisions
-     * 
-     * @return String name of the shape
-     */
-    virtual const char* getName() const = 0;
+    // All methods inherited from IQueryableShape and IColoredShape
+    // See those interfaces for full documentation
 };
 
 #endif // TETROMINO_SHAPE_H
