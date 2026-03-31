@@ -3321,3 +3321,326 @@ g++ -std=c++17 -I./src/include -o tetris.exe \
 
 **All 5 SOLID Principles Implemented** ✨
 
+# Tetris — SOLID UML Class Diagram
+
+```mermaid
+classDiagram
+
+%% ── Interfaces ──────────────────────────────────────────────────────────────
+
+class IInputProvider {
+    <<interface>>
+    +pollEvents()
+    +getCommand() GameCommand
+    +isQuitRequested() bool
+    +quit()
+    +getMousePosition(x, y)
+    +isMouseButtonPressed() bool
+}
+
+class ITransformable {
+    <<interface>>
+    +setPosition(x, y)
+    +moveBy(dx, dy)
+    +rotate()
+    +getPosX() int
+    +getPosY() int
+}
+
+class IQueryableShape {
+    <<interface>>
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getName() char*
+}
+
+class IColoredShape {
+    <<interface>>
+    +getColor(r, g, b, a)
+}
+
+class IGameStateRenderer {
+    <<interface>>
+    +render(sdl, board, tetromino, score)
+    +getName() char*
+}
+
+class IScreenRenderer {
+    <<interface>>
+    +render(sdlRenderer)
+    +getName() char*
+}
+
+class ScoringStrategy {
+    <<abstract>>
+    +calculateScore(lines, level, score) int
+    +getName() char*
+}
+
+class GameRenderer {
+    <<abstract>>
+    +render(sdl, board, tetromino, score)
+    +getName() char*
+}
+
+%% ── TetriminoShape (composite abstract) ────────────────────────────────────
+
+class TetriminoShape {
+    <<abstract>>
+}
+
+IQueryableShape <|.. TetriminoShape
+IColoredShape   <|.. TetriminoShape
+
+%% ── Concrete piece shapes ───────────────────────────────────────────────────
+
+class IPiece {
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getColor(r, g, b, a)
+    +getName() char*
+}
+
+class JPiece {
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getColor(r, g, b, a)
+    +getName() char*
+}
+
+class LPiece {
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getColor(r, g, b, a)
+    +getName() char*
+}
+
+class OPiece {
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getColor(r, g, b, a)
+    +getName() char*
+}
+
+class SPiece {
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getColor(r, g, b, a)
+    +getName() char*
+}
+
+class TPiece {
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getColor(r, g, b, a)
+    +getName() char*
+}
+
+class ZPiece {
+    +getShapeMatrix() int*
+    +getTypeId() int
+    +getColor(r, g, b, a)
+    +getName() char*
+}
+
+TetriminoShape <|-- IPiece
+TetriminoShape <|-- JPiece
+TetriminoShape <|-- LPiece
+TetriminoShape <|-- OPiece
+TetriminoShape <|-- SPiece
+TetriminoShape <|-- TPiece
+TetriminoShape <|-- ZPiece
+
+%% ── Scoring concretes ───────────────────────────────────────────────────────
+
+class ClassicScoring {
+    +calculateScore(lines, level, score) int
+    +getName() char*
+}
+
+class LevelBasedScoring {
+    +calculateScore(lines, level, score) int
+    +getName() char*
+}
+
+class ComboBasedScoring {
+    +calculateScore(lines, level, score) int
+    +getName() char*
+}
+
+ScoringStrategy <|-- ClassicScoring
+ScoringStrategy <|-- LevelBasedScoring
+ScoringStrategy <|-- ComboBasedScoring
+
+%% ── Scoring factory ─────────────────────────────────────────────────────────
+
+class ScoringFactory {
+    +createStrategy(ScoringType) ScoringStrategy*
+}
+
+ScoringFactory ..> ScoringStrategy : creates
+
+%% ── GameRenderer concretes ──────────────────────────────────────────────────
+
+class PlayingRenderer {
+    +render(sdl, board, tetromino, score)
+    +getName() char*
+}
+
+class MenuRenderer {
+    +render(sdl, board, tetromino, score)
+    +getName() char*
+}
+
+class GameOverRenderer {
+    +render(sdl, board, tetromino, score)
+    +getName() char*
+}
+
+GameRenderer <|-- PlayingRenderer
+GameRenderer <|-- MenuRenderer
+GameRenderer <|-- GameOverRenderer
+
+%% ── Shape factory ───────────────────────────────────────────────────────────
+
+class ShapeFactory {
+    +createRandomShape() TetriminoShape*
+    +createShape(typeId) TetriminoShape*
+    +getNumShapes() int
+}
+
+ShapeFactory ..> TetriminoShape : creates
+
+%% ── Core classes ────────────────────────────────────────────────────────────
+
+class InputHandler {
+    -event SDL_Event
+    -shouldQuit bool
+    +pollEvents()
+    +getCommand() GameCommand
+    +isQuitRequested() bool
+    +quit()
+    +getMousePosition(x, y)
+    +isMouseButtonPressed() bool
+}
+
+class Tetromino {
+    -currentShape TetriminoShape
+    -nextShape TetriminoShape
+    -posX int
+    -posY int
+    -currentRotation int
+    +initialize()
+    +spawnNewPiece()
+    +getCurrentPiece() int*
+    +getNextPiece() int*
+    +getCurrentShape() TetriminoShape*
+}
+
+class Board {
+    -grid int[20][20]
+    +clear()
+    +lockPieceToBoard(piece, x, y, type)
+    +clearCompleteLines() int
+    +getCell(x, y) int
+    +isCellOccupied(x, y) bool
+    +isPositionValid(x, y) bool
+}
+
+class Renderer {
+    -sdlRenderer SDL_Renderer*
+    -font TTF_Font*
+    +render(board, tetromino, score)
+    +renderMenu(selectedOption)
+    +renderGameOver(score)
+    +getSDLRenderer() SDL_Renderer*
+}
+
+IInputProvider  <|.. InputHandler
+ITransformable  <|.. Tetromino
+Tetromino       *--  TetriminoShape : owns 2
+PlayingRenderer ..>  Renderer : uses
+MenuRenderer    ..>  Renderer : uses
+GameOverRenderer ..> Renderer : uses
+
+%% ── UI classes ──────────────────────────────────────────────────────────────
+
+class Button {
+    +isClicked(x, y) bool
+    +draw()
+}
+
+class MenuScreen {
+    -play_button Button
+    -exit_button Button
+    +draw(selected MenuOption)
+    +handleClick(x, y) MenuOption
+}
+
+class GameOverScreen {
+    +draw(finalScore)
+}
+
+MenuScreen *-- Button : owns
+Renderer   ..> MenuScreen    : uses
+Renderer   ..> GameOverScreen : uses
+
+%% ── GameEngine ──────────────────────────────────────────────────────────────
+
+class GameEngine {
+    -board Board
+    -tetromino Tetromino
+    -inputProvider IInputProvider
+    -renderer Renderer
+    -scoringStrategy ScoringStrategy
+    -playingRenderer GameRenderer
+    -menuRenderer GameRenderer
+    -gameOverRenderer GameRenderer
+    -score int
+    -level int
+    -gameState GameStateEnum
+    +update(currentTime)
+    +render()
+    +startNewGame()
+    +setScoringStrategy(strategy)
+    +setInputProvider(provider)
+    +getScore() int
+    +shouldQuit() bool
+}
+
+GameEngine *-- Board
+GameEngine *-- Tetromino
+GameEngine *-- IInputProvider  : via interface
+GameEngine *-- Renderer
+GameEngine *-- ScoringStrategy : via interface
+GameEngine *-- GameRenderer    : x3 via interface
+
+%% ── main.cpp (Composition Root) ────────────────────────────────────────────
+
+class main {
+    <<composition root>>
+    +main() int
+}
+
+main ..> GameEngine       : creates and injects into
+main ..> InputHandler     : creates
+main ..> Renderer         : creates
+main ..> ScoringFactory   : uses
+main ..> ShapeFactory     : uses
+main ..> PlayingRenderer  : creates
+main ..> MenuRenderer     : creates
+main ..> GameOverRenderer : creates
+```
+
+---
+
+## SOLID Compliance Summary
+
+| Principle | How it's applied |
+|-----------|-----------------|
+| **S** — Single Responsibility | Each class has one job: `Board` manages the grid, `Renderer` draws, `InputHandler` translates SDL events |
+| **O** — Open/Closed | New shapes, scoring strategies, and renderers can be added without modifying existing classes |
+| **L** — Liskov Substitution | All 7 piece shapes and all scoring strategies are fully substitutable — no type-checking needed |
+| **I** — Interface Segregation | 6 focused interfaces: `IInputProvider`, `ITransformable`, `IQueryableShape`, `IColoredShape`, `IGameStateRenderer`, `IScreenRenderer` |
+| **D** — Dependency Inversion | `GameEngine` depends only on abstractions; `main.cpp` is the sole composition root that wires concrete types |
+
