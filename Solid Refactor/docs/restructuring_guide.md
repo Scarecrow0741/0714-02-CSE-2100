@@ -2093,7 +2093,7 @@ void GameEngine::update() {
 ### Complete Folder Structure - Step 4 (LSP-Compliant)
 
 ```
-d:\temp1\
+d:\solid-refactor\
 ├── ARCHITECTURE_AND_COMPILATION.md
 ├── Makefile                        (12 source file compilation)
 ├── tetris.exe                      (597 KB - fully functional executable)
@@ -2360,7 +2360,7 @@ Update GameEngine: Accept specific interfaces it needs (e.g., ITransformable&).
 ### Complete Folder Structure - Step 5 (ISP-Compliant)
 
 ```
-d:\temp1/
+d:\solid-refactor/
 ├── Makefile
 ├── tetris.exe
 ├── docs/
